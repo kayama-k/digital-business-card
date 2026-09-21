@@ -50,7 +50,7 @@
 - タイトルはSVGアウトライン素材を使用し、適切な代替テキストを提供する。
 - 画像素材は、定めたアセットのパスを差し替えて更新できる。
 - タイトルはKatakanaboy / RをWebフォント化せず、SVGアウトラインとして使用する。
-- プロフィール画像は`public/assets/illustrations/profile.png`に配置し、同パスで差し替えられるようにする。
+- プロフィール画像は`public/images/profile.png`に配置し、同パスで差し替えられるようにする。
 
 ### 5.2 保存・共有
 
@@ -73,7 +73,7 @@
 
 | 項目 | 正式な扱い |
 | --- | --- |
-| 紙テクスチャ | Figmaフレーム `1483:249` の `background_building` を正式素材とする。元画像は `public/assets/textures/paper-texture.jpg` に配置し、同パスを差し替え可能なアセットとして利用する。 |
+| 紙テクスチャ | Figmaフレーム `1483:249` の `background_building` を正式素材とする。元画像は `public/images/paper-texture.jpg` に配置し、同パスを差し替え可能なアセットとして利用する。 |
 
 ## 7. 名刺ビジュアルエディター（第2段階以降の検討候補）
 

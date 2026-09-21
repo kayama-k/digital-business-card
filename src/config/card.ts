@@ -31,9 +31,9 @@ export const cardConfig = {
     },
   ] satisfies LinkItem[],
   assets: {
-    profileIllustration: assetUrl('assets/illustrations/profile.png'),
-    outlinedTitle: assetUrl('assets/titles/image_title.svg'),
-    paperTexture: assetUrl('assets/textures/paper-texture.jpg'),
+    profileIllustration: assetUrl('images/profile.png'),
+    outlinedTitle: assetUrl('images/image_title.svg'),
+    paperTexture: assetUrl('images/paper-texture.jpg'),
   },
   animation: {
     waveDurationMs: 1300,
