@@ -1,10 +1,10 @@
 export type LinkItem = {
-  label: string
-  url: string
-  description: string
-}
+  label: string;
+  url: string;
+  description: string;
+};
 
-const assetUrl = (path: string) => `${import.meta.env.BASE_URL}${path}`
+const assetUrl = (path: string) => `${import.meta.env.BASE_URL}${path}`;
 
 /**
  * 名刺の文言・URL・アニメーション調整値の唯一の参照元。
@@ -43,6 +43,6 @@ export const cardConfig = {
     pageDurationMs: 540,
     start: 'simultaneous',
   },
-} as const
+} as const;
 
-export type CardConfig = typeof cardConfig
+export type CardConfig = typeof cardConfig;
