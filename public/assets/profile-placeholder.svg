@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 620" role="img" aria-labelledby="title desc">
+  <title id="title">プロフィールイラストの仮素材</title>
+  <desc id="desc">正式なFigma素材に差し替えるための、青い人物イラストの仮素材です。</desc>
+  <rect width="520" height="620" rx="260" fill="#d5e9fb"/>
+  <circle cx="260" cy="188" r="103" fill="#ffc6a5"/>
+  <path d="M155 183c0-91 62-137 130-137 63 0 113 41 113 123-25-28-67-45-119-45-51 0-89 18-124 59Z" fill="#18243c"/>
+  <path d="M107 602c15-153 81-234 153-234 71 0 139 81 153 234" fill="#0e5fba"/>
+  <path d="M181 389c21 25 49 37 79 37s58-12 79-37l-37 113h-84Z" fill="#fff7ed"/>
+  <circle cx="219" cy="196" r="8" fill="#18243c"/><circle cx="301" cy="196" r="8" fill="#18243c"/>
+  <path d="M229 244c19 14 43 14 62 0" fill="none" stroke="#bd695d" stroke-linecap="round" stroke-width="8"/>
+</svg>

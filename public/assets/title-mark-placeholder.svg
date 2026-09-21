@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 276 52" role="img" aria-labelledby="title desc">
+  <title id="title">ノン・ビジネスカードのタイトル仮素材</title>
+  <desc id="desc">Figmaから書き出したKatakanaboyのSVGアウトラインに差し替えるための仮のタイトルマークです。</desc>
+  <path d="M3 6h48v40H3zM13 16h28v20H13zM61 6h34v40H61zM105 6h55v9h-22v31h-11V15h-22zM170 6h32c13 0 22 8 22 20s-9 20-22 20h-32zm11 10v20h20c7 0 12-4 12-10s-5-10-12-10zM235 6h38v10h-27v6h24v9h-24v5h27v10h-38z" fill="#0e5fba"/>
+</svg>
