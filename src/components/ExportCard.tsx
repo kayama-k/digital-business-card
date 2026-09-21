@@ -1,11 +1,12 @@
+import { forwardRef } from 'react'
 import { QrCode } from './QrCode'
 import { cardConfig } from '../config/card'
 
-export function ExportCard() {
+export const ExportCard = forwardRef<HTMLElement>(function ExportCard(_, ref) {
   const { person, urls, title } = cardConfig
 
   return (
-    <article className="export-card" aria-hidden="true">
+    <article ref={ref} className="export-card" aria-hidden="true" style={{ '--paper-texture': `url(${cardConfig.assets.paperTexture})` } as React.CSSProperties}>
       <div className="export-card__ribbon">{title}</div>
       <p className="export-card__copy">ただの、自己紹介。</p>
       <div className="export-card__portrait">
@@ -21,4 +22,4 @@ export function ExportCard() {
       </div>
     </article>
   )
-}
+})

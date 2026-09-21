@@ -76,13 +76,12 @@ export default function App() {
 
   return (
     <main className="app-shell">
-      <article className={`business-card business-card--${view}`} style={{ '--page-duration': `${cardConfig.animation.pageDurationMs}ms`, '--page-easing': cardConfig.animation.easing } as React.CSSProperties}>
+      <article className={`business-card business-card--${view}`} style={{ '--page-duration': `${cardConfig.animation.pageDurationMs}ms`, '--page-easing': cardConfig.animation.easing, '--paper-texture': `url(${cardConfig.assets.paperTexture})` } as React.CSSProperties}>
         <Wave active={transitioning} edge="top" />
         <header className="brand-header">
-          <img src={cardConfig.assets.outlinedTitle} alt="" aria-hidden="true" />
+          <img src={cardConfig.assets.outlinedTitle} alt={cardConfig.title} />
           <div>
             <p className="brand-header__kicker">A LITTLE HELLO</p>
-            <h1>{cardConfig.title}</h1>
             <p>{cardConfig.person.message}</p>
           </div>
         </header>

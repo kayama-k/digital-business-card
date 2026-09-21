@@ -4,9 +4,11 @@ export type LinkItem = {
   description: string
 }
 
+const assetUrl = (path: string) => `${import.meta.env.BASE_URL}${path}`
+
 /**
  * 名刺の文言・URL・アニメーション調整値の唯一の参照元。
- * 素材を受け取ったら `assets` のパスだけを差し替える。
+ * 画像素材は `assets` のパスだけを差し替える。
  */
 export const cardConfig = {
   title: 'ノン・ビジネスカード',
@@ -29,9 +31,9 @@ export const cardConfig = {
     },
   ] satisfies LinkItem[],
   assets: {
-    // Figmaから書き出した正式素材が届いたらここを置き換える。
-    profileIllustration: '/assets/profile-placeholder.svg',
-    outlinedTitle: '/assets/title-mark-placeholder.svg',
+    profileIllustration: assetUrl('assets/illustrations/profile.png'),
+    outlinedTitle: assetUrl('assets/titles/image_title.svg'),
+    paperTexture: assetUrl('assets/textures/paper-texture.jpg'),
   },
   animation: {
     waveDurationMs: 1300,

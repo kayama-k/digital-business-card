@@ -18,6 +18,7 @@ const actions: Array<{ id: ShareAction; label: string; detail: string }> = [
 
 export function ShareSheet({ open, onClose, onAction, returnFocusRef }: ShareSheetProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
+  const wasOpenRef = useRef(false)
 
   useEffect(() => {
     if (!open) return
@@ -46,7 +47,12 @@ export function ShareSheet({ open, onClose, onAction, returnFocusRef }: ShareShe
   }, [onClose, open])
 
   useEffect(() => {
-    if (!open) returnFocusRef.current?.focus()
+    if (open) {
+      wasOpenRef.current = true
+      return
+    }
+    if (wasOpenRef.current) returnFocusRef.current?.focus()
+    wasOpenRef.current = false
   }, [open, returnFocusRef])
 
   if (!open) return null
