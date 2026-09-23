@@ -1,9 +1,10 @@
 import { forwardRef } from 'react';
 import { cardConfig } from '../config/card';
 import { QrCode } from './QrCode';
+import { Wave } from './Wave';
 
 export const ExportCard = forwardRef<HTMLElement>(function ExportCard(_, ref) {
-  const { person, urls, title } = cardConfig;
+  const { person, urls, assets } = cardConfig;
 
   return (
     <article
@@ -16,21 +17,29 @@ export const ExportCard = forwardRef<HTMLElement>(function ExportCard(_, ref) {
         } as React.CSSProperties
       }
     >
-      <div className="export-card__ribbon">{title}</div>
-      <p className="export-card__copy">ただの、自己紹介。</p>
-      <div className="export-card__portrait">
-        <img src={cardConfig.assets.profileIllustration} alt="" />
-      </div>
-      <p className="export-card__label">BEGINNER</p>
-      <h2>{person.name}</h2>
-      <p className="export-card__reading">{person.reading}</p>
-      <p className="export-card__message">
-        デザインを通じて、またつながりたい。
-      </p>
-      <div className="export-card__qr">
-        <QrCode value={urls.publicCard} label="デジタル名刺を開くQRコード" />
-        <span>SCAN ME</span>
-      </div>
+      <header className="export-card__header">
+        <img src={assets.outlinedTitle} alt="" />
+        <p>{person.message}</p>
+        <Wave active={false} edge="bottom" />
+      </header>
+      <section className="export-card__body">
+        <p className="export-card__label">{person.role}</p>
+        <div className="export-card__portrait">
+          <img src={assets.profileIllustration} alt="" />
+        </div>
+        <h2>{person.name}</h2>
+        <p className="export-card__reading">{person.reading}</p>
+      </section>
+      <footer className="export-card__footer">
+        <div>
+          <p>PORTFOLIO</p>
+          <span>{urls.portfolio}</span>
+        </div>
+        <div className="export-card__qr">
+          <QrCode value={urls.portfolio} label="ポートフォリオを開くQRコード" />
+        </div>
+        <Wave active={false} edge="top" />
+      </footer>
     </article>
   );
 });

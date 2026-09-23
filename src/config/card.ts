@@ -14,8 +14,8 @@ export const cardConfig = {
   title: 'ノン・ビジネスカード',
   person: {
     name: 'しおれもん@長野',
-    reading: 'SALTY / LEMON',
-    role: 'デザインを学ぶビギナー',
+    reading: 'SALTY LEMON',
+    role: 'ビギナー',
     message: 'ただの、自己紹介。',
     location: 'Nagano, Japan',
   },
@@ -33,15 +33,22 @@ export const cardConfig = {
   assets: {
     profileIllustration: assetUrl('images/profile.png'),
     outlinedTitle: assetUrl('images/image_title.svg'),
-    paperTexture: assetUrl('images/paper-texture.jpg'),
+    paperTexture: assetUrl('images/base.png'),
+    blueTexture: assetUrl('images/base-blue.png'),
   },
   animation: {
     waveDurationMs: 1300,
     waveAmplitude: 19,
-    waveDecay: 'long',
+    // 最後の小さな揺れを最初の揺れの何割残すか。0.21 は長い余韻。
+    waveDecay: 0.21,
+    // 中間の波形ポイントをつなぐ接線の強さ。小さいほど穏やかに収束する。
+    waveCurveTension: 0.55,
     easing: 'cubic-bezier(0.45, 0, 0.15, 1)',
     pageDurationMs: 540,
-    start: 'simultaneous',
+    start: {
+      pageDelayMs: 0,
+      waveDelayMs: 0,
+    },
   },
 } as const;
 

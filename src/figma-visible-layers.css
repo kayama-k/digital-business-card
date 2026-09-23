@@ -1,0 +1,429 @@
+/* idea3_profile: only visible Figma layers. The paper base sits below both
+   independently positioned wave vectors; there is no hidden building layer. */
+.business-card {
+  --blue: #3e8ab0;
+  container-type: inline-size;
+  display: block;
+  width: min(100%, 512px, calc((100dvh - 128px) * 2 / 3));
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  background: #fff var(--paper-texture) center / 100% 100% no-repeat;
+}
+
+.business-card::before,
+.export-card::before {
+  display: none;
+}
+
+.business-card > .wave,
+.export-card .wave {
+  position: absolute;
+  right: 0;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  transform: none;
+}
+
+.wave--bottom {
+  top: 0;
+  aspect-ratio: 1024 / 407;
+}
+
+.wave--top {
+  bottom: 0;
+  aspect-ratio: 1024 / 402;
+}
+
+.wave__body {
+  pointer-events: none;
+}
+
+.business-card > .wave {
+  z-index: 1;
+  mix-blend-mode: normal;
+}
+
+.brand-header {
+  position: absolute;
+  z-index: 2;
+  top: 1.76%;
+  left: 0;
+  display: block;
+  width: 100%;
+  min-height: 0;
+  padding: 0;
+  color: #fff;
+  background: none;
+  text-align: center;
+}
+
+.brand-header > img {
+  width: 100%;
+  max-height: none;
+}
+
+.brand-header > div {
+  position: absolute;
+  top: 12.7cqw;
+  left: 16.162cqw;
+  display: block;
+  width: 67.676cqw;
+  min-height: 10.059cqw;
+}
+
+.brand-header > div > p:last-child {
+  position: relative;
+  left: 0.65cqw;
+  color: #fff;
+  font-size: 3.45cqw;
+  font-weight: 700;
+  font-feature-settings: "palt", "kern";
+  font-kerning: normal;
+  letter-spacing: 0.26em;
+}
+
+.card-viewport {
+  position: absolute;
+  z-index: 2;
+  top: 31.25%;
+  right: 0;
+  bottom: 24%;
+  left: 0;
+  overflow: hidden;
+  touch-action: pan-y;
+  cursor: grab;
+}
+
+.card-viewport:active {
+  cursor: grabbing;
+}
+
+.card-viewport:focus-visible {
+  outline: 3px solid #f7ce20;
+  outline-offset: -3px;
+}
+
+.business-card--profile .card-viewport {
+  bottom: 20%;
+}
+
+.card-page {
+  min-height: 0;
+  padding: 0 5.5cqw;
+}
+
+.eyebrow {
+  color: #050505;
+  font-size: 7cqw;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.04em;
+}
+
+.portfolio-page > h2.eyebrow {
+  font-size: 5cqw;
+  min-height: 9.1cqw;
+}
+
+.profile-page {
+  position: relative;
+  display: block;
+}
+
+.profile-page__art {
+  position: absolute;
+  inset: 0 0 auto;
+  order: 1;
+  align-items: start;
+}
+
+.profile-page__art img {
+  width: 36cqw;
+  max-height: 36cqw;
+  margin-top: 0;
+}
+
+.profile-page > .eyebrow {
+  position: absolute;
+  top: 42.9cqw;
+  right: 0;
+  left: 0;
+  order: 2;
+  margin: 0;
+  font-size: 4.25cqw;
+}
+
+.profile-page__copy {
+  position: absolute;
+  top: 51.4cqw;
+  right: 0;
+  left: 0;
+  order: 3;
+}
+
+.profile-page h2 {
+  font-size: 6.3cqw;
+  line-height: 1.2;
+  font-weight: 800;
+  font-feature-settings: "palt", "kern";
+  font-kerning: normal;
+  letter-spacing: 0.04em;
+}
+
+.profile-page__reading {
+  margin-top: 1.5cqw;
+  font-size: 4cqw;
+  letter-spacing: 0.055em;
+}
+
+.portfolio-page {
+  grid-template-rows: auto 1fr;
+  gap: 2cqw;
+}
+
+.portfolio-page__body {
+  align-content: start;
+  gap: 3cqw;
+}
+
+.qr-frame {
+  width: 36cqw;
+}
+
+.portfolio-link {
+  font-size: 4.2cqw;
+}
+
+.carousel-indicator {
+  position: absolute;
+  z-index: 3;
+  right: 0;
+  bottom: 6%;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.35cqw;
+  color: #fff;
+  font-size: 3.6cqw;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.carousel-indicator__item {
+  opacity: 0.9;
+}
+
+.carousel-indicator__item.is-current {
+  color: #ffd500;
+  font-size: 4.8cqw;
+}
+
+.app-shell {
+  min-height: min(100dvh, 768px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 2.4vh, 20px);
+  overflow: auto;
+  padding: max(12px, env(safe-area-inset-top)) 16px
+    max(12px, env(safe-area-inset-bottom));
+}
+
+.app-nav {
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: min(100%, 512px, calc((100dvh - 128px) * 2 / 3));
+  gap: 8px;
+  padding: 8px;
+  border-radius: 18px;
+  background: rgb(33 133 172 / 14%);
+}
+
+.app-nav button {
+  display: flex;
+  min-height: 68px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 4px;
+  color: #050505;
+  border: 0;
+  border-radius: 10px;
+  background: #fcfaf1;
+  box-shadow: 0 4px 8px rgb(0 0 0 / 14%);
+  font-size: clamp(0.68rem, 3.1cqw, 0.9rem);
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.app-nav__icon {
+  color: #2185ac;
+  font-size: clamp(1rem, 5.2cqw, 1.35rem);
+  line-height: 1;
+}
+
+.app-nav button.is-current {
+  color: #fff;
+  background: #9c9c9c;
+}
+
+.app-nav button.is-current .app-nav__icon {
+  color: #ffd500;
+}
+
+.app-nav button:active {
+  transform: scale(0.97);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The save image uses the same base and wave silhouettes at Figma's 1024×1536. */
+.export-card {
+  --blue: #3e8ab0;
+  display: block;
+  background: #fff var(--paper-texture) center / 100% 100% no-repeat;
+}
+
+.export-card__header,
+.export-card__footer {
+  position: absolute;
+  overflow: visible;
+  background: none;
+}
+
+.export-card__header {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 350px;
+  padding: 27px 0 0;
+}
+
+.export-card__header > img {
+  width: 1024px;
+}
+
+.export-card__header > p {
+  position: absolute;
+  top: 130px;
+  left: 0;
+  width: 100%;
+  font-size: 47px;
+  text-align: center;
+}
+
+.export-card__header .wave {
+  top: 0;
+  bottom: auto;
+}
+
+.export-card .wave {
+  z-index: 0;
+  mix-blend-mode: normal;
+}
+
+.export-card__header > img,
+.export-card__header > p {
+  position: relative;
+  z-index: 1;
+}
+
+.export-card__header > p {
+  position: absolute;
+}
+
+.export-card__body {
+  position: absolute;
+  z-index: 2;
+  top: 425px;
+  left: 0;
+  width: 100%;
+  height: 620px;
+  grid-template-rows: 70px 420px 80px 50px;
+  padding: 0 80px;
+}
+
+.export-card__portrait {
+  padding: 0;
+}
+
+.export-card__portrait img {
+  width: 368px;
+  max-width: 368px;
+  max-height: 368px;
+}
+
+.export-card__footer {
+  inset: 0;
+  display: block;
+  padding: 0;
+}
+
+.export-card__footer .wave {
+  top: auto;
+  bottom: 0;
+}
+
+.export-card__footer > div:first-child {
+  position: absolute;
+  z-index: 2;
+  top: 1240px;
+  left: 110px;
+}
+
+.export-card__qr {
+  right: 80px;
+  bottom: 40px;
+  width: 300px;
+}
+
+.export-card__footer > .export-card__qr {
+  z-index: 2;
+}
+
+@media (min-width: 513px) {
+  .business-card {
+    height: auto;
+  }
+}
+
+@media (max-height: 660px) {
+  .brand-header {
+    top: 1.76%;
+    padding: 0;
+  }
+
+  .brand-header > img {
+    max-height: none;
+  }
+
+  .brand-header > div > p:last-child {
+    font-size: 3.45cqw;
+  }
+
+  .card-page {
+    padding-top: 0;
+  }
+}

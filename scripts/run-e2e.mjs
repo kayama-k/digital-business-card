@@ -69,7 +69,11 @@ preview.once('exit', () => {
 
 try {
   await waitForPreview();
-  const testExitCode = await run(process.execPath, [playwrightCli, 'test']);
+  const testExitCode = await run(process.execPath, [
+    playwrightCli,
+    'test',
+    ...process.argv.slice(2),
+  ]);
   if (testExitCode !== 0) process.exitCode = testExitCode;
 } finally {
   if (!preview.killed && !previewExited) preview.kill();
