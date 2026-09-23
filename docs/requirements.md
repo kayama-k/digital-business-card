@@ -73,9 +73,11 @@
 
 | 項目 | 正式な扱い |
 | --- | --- |
-| 紙テクスチャ | Figmaフレーム `1483:249` の `background_building` を正式素材とする。元画像は `public/images/paper-texture.jpg` に配置し、同パスを差し替え可能なアセットとして利用する。 |
+| 紙テクスチャ | GitHubにある元画像 `public/images/paper-texture.jpg` を確認したうえで、`idea3_profile` の表示中 `base` レイヤーのクロップと塗りを再現した `public/images/base.png` を表示に使う。非表示の `background_building` は参照しない。 |
+| 上下の波 | 表示中の `両端あしらい上部`／`両端あしらい下部` に含まれる各 `Vector 3` の輪郭を使用し、`#3E8AB0` を `base` に乗算した紙目は `public/images/base-blue.png` に保持する。 |
 
 画面の見た目を比較するための2倍書き出しPNGは `docs/design-comps/` に置く。これらは実装参照用であり、公開アプリから読み込まない。
+`base` を差し替えたときは `node scripts/build-blue-texture.mjs` で青い紙目を再生成する。
 
 ## 7. 名刺ビジュアルエディター（第2段階以降の検討候補）
 

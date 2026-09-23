@@ -18,6 +18,19 @@
 
 `npm run dev` は標準のVite開発サーバーを起動する。依存を同期する必要がある場合は、開発サーバーを人が終了してから `npm ci` を実行する。`npm run test:e2e` は、空いているポート4174に起動した自分自身のPreviewだけを終了する。他のプロセスを自動終了する仕組みは持たない。
 
+E2Eはモバイル幅でChromium、Firefox、WebKitを対象に実行する。WebKitはSafariに近い検証であり、iPhone Safariそのものではない。
+
+## モバイル実機の公開ゲート
+
+公開前に、実機のiPhone SafariとAndroid Chromeの**両方**で次を確認する。いずれかに問題があれば公開しない。
+
+1. プロフィール／ポートフォリオの表示と切替
+2. 保存・シェアシートの表示・閉じる操作
+3. URLシェアとリンクコピーのフォールバック
+4. PNG・PDF保存操作の開始、生成ファイルを開けること、エラー表示がないこと
+
+GitHub Pagesの公開ワークフローは自動実行しない。上記を確認した後に、GitHub Actionsの **Deploy GitHub Pages** を手動実行し、`mobile_output_checked` を有効にして公開する。Chromium・Firefox・WebKitの自動検証が成功していることも公開条件とする。
+
 ## 初回公開時のGitHub設定
 
 リポジトリ管理者は、最初の公開前にGitHubのSecret ScanningとPush Protectionを有効にする。これはGitHubのリポジトリ設定で行う一度だけの作業であり、リポジトリ内のCIから有効化・検証はできない。`npm run check:public` はその補助策であり、GitHub側の検出を置き換えない。

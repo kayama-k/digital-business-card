@@ -1,6 +1,6 @@
 import { toPng } from 'html-to-image';
 import { jsPDF } from 'jspdf';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { CardContent, type CardView } from './components/CardContent';
 import { ExportCard } from './components/ExportCard';
 import { type ShareAction, ShareSheet } from './components/ShareSheet';
@@ -16,23 +16,77 @@ const download = (href: string, filename: string) => {
 
 export default function App() {
   const [view, setView] = useState<CardView>('profile');
-  const [transitioning, setTransitioning] = useState(false);
+  const [transition, setTransition] = useState<{
+    from: CardView;
+    to: CardView;
+  } | null>(null);
+  const [waveActive, setWaveActive] = useState(false);
+  const [waveRun, setWaveRun] = useState(0);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [notice, setNotice] = useState('');
   const exportRef = useRef<HTMLElement>(null);
   const shareButtonRef = useRef<HTMLButtonElement>(null);
+  const pageTimerRef = useRef<number | undefined>(undefined);
   const waveTimerRef = useRef<number | undefined>(undefined);
+  const swipeStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  useEffect(
+    () => () => {
+      window.clearTimeout(pageTimerRef.current);
+      window.clearTimeout(waveTimerRef.current);
+    },
+    [],
+  );
 
   const setCardView = (nextView: CardView) => {
-    if (nextView === view || transitioning) return;
+    if (nextView === view || transition) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setView(nextView);
+      return;
+    }
+
+    window.clearTimeout(pageTimerRef.current);
     window.clearTimeout(waveTimerRef.current);
-    setTransitioning(false);
-    requestAnimationFrame(() => setTransitioning(true));
+    setTransition({ from: view, to: nextView });
+    setWaveActive(true);
+    setWaveRun((currentRun) => currentRun + 1);
+    pageTimerRef.current = window.setTimeout(() => {
+      setView(nextView);
+      setTransition(null);
+    }, cardConfig.animation.start.pageDelayMs +
+      cardConfig.animation.pageDurationMs);
     waveTimerRef.current = window.setTimeout(
-      () => setTransitioning(false),
-      cardConfig.animation.waveDurationMs,
+      () => setWaveActive(false),
+      cardConfig.animation.start.waveDelayMs +
+        cardConfig.animation.waveDurationMs,
     );
-    setView(nextView);
+  };
+
+  const selectedView = transition?.to ?? view;
+  const pageLabel =
+    selectedView === 'profile' ? 'プロフィール 1 / 2' : 'ポートフォリオ 2 / 2';
+
+  const handleSwipeStart = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (
+      (event.target as HTMLElement).closest('a,button,input,textarea,select')
+    ) {
+      swipeStartRef.current = null;
+      return;
+    }
+    swipeStartRef.current = { x: event.clientX, y: event.clientY };
+  };
+
+  const handleSwipeEnd = (event: React.PointerEvent<HTMLDivElement>) => {
+    const start = swipeStartRef.current;
+    swipeStartRef.current = null;
+    if (!start || transition) return;
+    if ((event.target as HTMLElement).closest('a,button,input,textarea,select'))
+      return;
+    const deltaX = event.clientX - start.x;
+    const deltaY = event.clientY - start.y;
+    if (Math.abs(deltaX) < 28 || Math.abs(deltaX) < Math.abs(deltaY) * 1.25)
+      return;
+    setCardView(deltaX < 0 ? 'portfolio' : 'profile');
   };
 
   const renderExport = useCallback(async () => {
@@ -98,55 +152,113 @@ export default function App() {
         style={
           {
             '--page-duration': `${cardConfig.animation.pageDurationMs}ms`,
+            '--page-delay': `${cardConfig.animation.start.pageDelayMs}ms`,
             '--page-easing': cardConfig.animation.easing,
             '--paper-texture': `url(${cardConfig.assets.paperTexture})`,
           } as React.CSSProperties
         }
       >
-        <Wave active={transitioning} edge="top" />
         <header className="brand-header">
           <img src={cardConfig.assets.outlinedTitle} alt={cardConfig.title} />
           <div>
             <p className="brand-header__kicker">A LITTLE HELLO</p>
-            <p>{cardConfig.person.message}</p>
+            <p className="brand-header__subtitle">
+              {cardConfig.person.message}
+            </p>
           </div>
         </header>
+        <Wave
+          key={`bottom-${waveRun}`}
+          active={waveActive}
+          edge="bottom"
+          run={waveRun}
+        />
 
-        <div className="card-viewport" aria-live="polite">
+        <section
+          className="card-viewport"
+          aria-label="名刺のカルーセル"
+          aria-live="polite"
+          onPointerDown={handleSwipeStart}
+          onPointerUp={handleSwipeEnd}
+          onPointerCancel={() => {
+            swipeStartRef.current = null;
+          }}
+        >
+          {transition && (
+            <div
+              key="leaving"
+              className={`card-track card-track--leaving card-track--${transition.to === 'portfolio' ? 'left' : 'right'}`}
+              aria-hidden="true"
+              inert
+            >
+              <CardContent view={transition.from} />
+            </div>
+          )}
           <div
-            className={`card-track ${transitioning ? 'card-track--moving' : ''}`}
+            key="current"
+            className={`card-track${transition ? ` card-track--entering card-track--${transition.to === 'portfolio' ? 'right' : 'left'}` : ''}`}
           >
-            <CardContent view={view} />
+            <CardContent view={transition?.to ?? view} />
           </div>
-        </div>
+        </section>
 
-        <Wave active={transitioning} edge="bottom" />
-        <nav className="bottom-nav" aria-label="名刺のメニュー">
-          <button
-            type="button"
-            className={view === 'profile' ? 'is-current' : ''}
-            aria-current={view === 'profile' ? 'page' : undefined}
-            onClick={() => setCardView('profile')}
+        <Wave
+          key={`top-${waveRun}`}
+          active={waveActive}
+          edge="top"
+          run={waveRun}
+        />
+        <div className="carousel-indicator" aria-hidden="true">
+          <span
+            className={`carousel-indicator__item${selectedView === 'profile' ? ' is-current' : ''}`}
           >
-            <span aria-hidden="true">●</span>プロフィール
-          </button>
-          <button
-            type="button"
-            className={view === 'portfolio' ? 'is-current' : ''}
-            aria-current={view === 'portfolio' ? 'page' : undefined}
-            onClick={() => setCardView('portfolio')}
+            {selectedView === 'profile' ? '▶' : '◀'}
+          </span>
+          <span
+            className={`carousel-indicator__item${selectedView === 'portfolio' ? ' is-current' : ''}`}
           >
-            <span aria-hidden="true">↗</span>ポートフォリオ
-          </button>
-          <button
-            type="button"
-            ref={shareButtonRef}
-            onClick={() => setSheetOpen(true)}
-          >
-            <span aria-hidden="true">↓</span>保存・シェア
-          </button>
-        </nav>
+            {selectedView === 'profile' ? '▶' : '◀'}
+          </span>
+        </div>
       </article>
+
+      <nav className="app-nav" aria-label="名刺のメニュー">
+        <button
+          type="button"
+          className={selectedView === 'profile' ? 'is-current' : ''}
+          aria-current={selectedView === 'profile' ? 'page' : undefined}
+          onClick={() => setCardView('profile')}
+        >
+          <span className="app-nav__icon" aria-hidden="true">
+            ●
+          </span>
+          <span className="app-nav__label">プロフィール</span>
+        </button>
+        <button
+          type="button"
+          className={selectedView === 'portfolio' ? 'is-current' : ''}
+          aria-current={selectedView === 'portfolio' ? 'page' : undefined}
+          onClick={() => setCardView('portfolio')}
+        >
+          <span className="app-nav__icon" aria-hidden="true">
+            ↗
+          </span>
+          <span className="app-nav__label">ポートフォリオ</span>
+        </button>
+        <button
+          type="button"
+          ref={shareButtonRef}
+          onClick={() => setSheetOpen(true)}
+        >
+          <span className="app-nav__icon" aria-hidden="true">
+            ↓
+          </span>
+          <span className="app-nav__label">保存・シェア</span>
+        </button>
+      </nav>
+      <p className="sr-only" aria-live="polite">
+        {pageLabel}
+      </p>
 
       <div className="export-stage">
         <ExportCard ref={exportRef} />

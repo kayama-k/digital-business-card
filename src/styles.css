@@ -32,7 +32,7 @@ a:focus-visible {
 }
 
 .app-shell {
-  min-height: 100dvh;
+  min-height: min(100dvh, 768px);
   display: grid;
   place-items: center;
   padding: clamp(0px, 3vw, 28px);
@@ -48,7 +48,7 @@ a:focus-visible {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto auto;
   width: min(100%, 512px);
-  min-height: min(100dvh, 768px);
+  min-height: 100dvh;
   overflow: hidden;
   color: var(--ink);
   background: #fff;
@@ -117,48 +117,47 @@ a:focus-visible {
 .card-track {
   height: 100%;
 }
-.card-track--moving {
-  animation: card-shift var(--page-duration) var(--page-easing);
-}
-.business-card--portfolio .card-track--moving {
-  animation-name: card-shift-reverse;
-}
-
-@keyframes card-shift {
-  0% {
-    opacity: 0.3;
-    transform: translateX(8%);
-  }
-  42% {
-    opacity: 0;
-    transform: translateX(-8%);
-  }
-  58% {
-    opacity: 0;
-    transform: translateX(8%);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
+.card-track--leaving,
+.card-track--entering {
+  position: absolute;
+  inset: 0;
+  animation-duration: var(--page-duration);
+  animation-timing-function: var(--page-easing);
+  animation-delay: var(--page-delay);
+  animation-fill-mode: both;
 }
 
-@keyframes card-shift-reverse {
-  0% {
-    opacity: 0.3;
-    transform: translateX(-8%);
+.card-track--leaving.card-track--left {
+  animation-name: card-exit-left;
+}
+.card-track--leaving.card-track--right {
+  animation-name: card-exit-right;
+}
+.card-track--entering.card-track--left {
+  animation-name: card-enter-left;
+}
+.card-track--entering.card-track--right {
+  animation-name: card-enter-right;
+}
+
+@keyframes card-exit-left {
+  to {
+    transform: translateX(-100%);
   }
-  42% {
-    opacity: 0;
-    transform: translateX(8%);
+}
+@keyframes card-exit-right {
+  to {
+    transform: translateX(100%);
   }
-  58% {
-    opacity: 0;
-    transform: translateX(-8%);
+}
+@keyframes card-enter-left {
+  from {
+    transform: translateX(-100%);
   }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
+}
+@keyframes card-enter-right {
+  from {
+    transform: translateX(100%);
   }
 }
 
@@ -341,50 +340,7 @@ a:focus-visible {
   transform: rotate(180deg) translateY(1px);
 }
 .wave__body {
-  fill: currentColor;
-}
-.wave__shadow {
-  fill: #72a7e2;
-  opacity: 0.72;
-}
-.wave--active .wave__body {
-  transform-origin: center;
-  animation: wave-pull var(--wave-duration) cubic-bezier(0.45, 0, 0.15, 1) 1
-    both;
-}
-.wave--active .wave__shadow {
-  transform-origin: center;
-  animation: wave-pull-shadow var(--wave-duration)
-    cubic-bezier(0.45, 0, 0.15, 1) 1 both;
-}
-
-@keyframes wave-pull {
-  0%,
-  100% {
-    transform: scaleY(1) translateX(0);
-  }
-  26% {
-    transform: scaleY(1.24) translateX(-1.2%);
-  }
-  58% {
-    transform: scaleY(0.88) translateX(1%);
-  }
-  82% {
-    transform: scaleY(1.05) translateX(-.35%);
-  }
-}
-
-@keyframes wave-pull-shadow {
-  0%,
-  100% {
-    transform: scaleY(1) translateX(0);
-  }
-  33% {
-    transform: scaleY(1.35) translateX(1.3%);
-  }
-  66% {
-    transform: scaleY(0.87) translateX(-.8%);
-  }
+  pointer-events: none;
 }
 
 .bottom-nav {
@@ -676,5 +632,416 @@ a:focus-visible {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* Design-comp alignment: the card is a blue paper cover wrapped around a white sheet. */
+.app-shell {
+  padding: 0;
+  background: #dce8f1;
+}
+
+.business-card {
+  --ink: #050505;
+  --blue: #2185ac;
+  --yellow: #ffd500;
+  grid-template-rows: auto 48px minmax(0, 1fr) 48px auto;
+  width: min(100%, 512px);
+  min-height: min(100dvh, 768px);
+  background: #faf9f2;
+  box-shadow: none;
+}
+
+.business-card::before {
+  z-index: 0;
+  opacity: 0.17;
+  mix-blend-mode: multiply;
+}
+
+.brand-header {
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  min-height: 145px;
+  padding: 25px 24px 0;
+  color: #fff;
+  background: #2185ac var(--paper-texture) center / cover;
+  background-blend-mode: multiply;
+}
+
+.brand-header > img {
+  width: min(100%, 460px);
+}
+
+.brand-header > div {
+  display: block;
+}
+
+.brand-header__kicker {
+  display: none;
+}
+
+.brand-header > div > p:last-child {
+  color: #fff;
+  font-size: clamp(1.15rem, 5.3vw, 1.5rem);
+  font-weight: 800;
+  letter-spacing: 0.09em;
+}
+
+.wave {
+  z-index: 2;
+  height: 48px;
+  margin: -1px 0 0;
+  color: #2185ac;
+  transform: translateY(1px);
+}
+
+.wave--bottom {
+  margin: -1px 0 0;
+  transform: rotate(180deg) translateY(1px);
+}
+
+.wave__shadow {
+  display: none;
+}
+
+.card-page {
+  height: 100%;
+  min-height: 0;
+  padding: 46px 28px 22px;
+}
+
+.eyebrow {
+  color: #050505;
+  font-size: clamp(1.45rem, 7vw, 2.15rem);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-align: center;
+}
+
+.profile-page {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.profile-page__art {
+  min-height: 0;
+}
+
+.profile-page__art::before,
+.lemon {
+  display: none;
+}
+
+.profile-page__art img {
+  width: min(54vw, 246px);
+  max-height: min(32vh, 246px);
+  filter: none;
+}
+
+.profile-page__role,
+.profile-page__location {
+  display: none;
+}
+
+.profile-page h2 {
+  color: #050505;
+  font-size: clamp(2rem, 9vw, 2.7rem);
+  font-weight: 900;
+  letter-spacing: -0.055em;
+}
+
+.profile-page__reading {
+  margin-top: 10px;
+  color: #8f8f8f;
+  font-size: clamp(1.25rem, 5.4vw, 1.62rem);
+  letter-spacing: 0.055em;
+}
+
+.portfolio-page {
+  grid-template-rows: auto 1fr;
+  gap: 28px;
+}
+
+.portfolio-page__body {
+  align-content: start;
+  gap: 22px;
+}
+
+.portfolio-page__intro {
+  display: none;
+}
+
+.portfolio-page > h2.eyebrow {
+  margin: 0;
+  color: #050505;
+  font-size: clamp(1.45rem, 7vw, 2.15rem);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+}
+
+.qr-frame {
+  width: min(57vw, 270px);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.portfolio-link {
+  gap: 0;
+  padding: 4px 0;
+  color: #050505;
+  border-bottom: 2px solid #050505;
+  font-size: clamp(1rem, 4.5vw, 1.34rem);
+  font-weight: 500;
+}
+
+.portfolio-link span:last-child {
+  display: none;
+}
+
+.bottom-nav {
+  z-index: 3;
+  gap: 15px;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  background: #2185ac var(--paper-texture) center / cover;
+  background-blend-mode: multiply;
+}
+
+.bottom-nav button {
+  min-height: 52px;
+  padding: 4px 3px;
+  color: #050505;
+  border-radius: 6px;
+  background: #fcfaf1;
+  box-shadow: 0 4px 6px rgb(0 0 0 / 22%);
+  font-size: clamp(0.82rem, 3.8vw, 1.14rem);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.bottom-nav button span {
+  display: none;
+}
+
+.bottom-nav button.is-current {
+  color: #fff;
+  border-radius: 6px;
+  background: #9c9c9c;
+}
+
+.sheet-layer {
+  align-items: end;
+}
+
+.share-sheet {
+  width: min(100%, 512px);
+  padding: 14px 32px calc(26px + env(safe-area-inset-bottom));
+  border-radius: 30px 30px 0 0;
+}
+
+.share-sheet__handle {
+  width: 48px;
+  margin-bottom: 25px;
+}
+
+.share-sheet__heading {
+  margin-bottom: 28px;
+}
+
+.share-sheet__heading > p,
+.share-action small,
+.share-action > span:last-child,
+.share-sheet__close {
+  display: none;
+}
+
+.share-sheet__heading h2 {
+  color: #050505;
+  font-size: clamp(1.65rem, 8vw, 2.2rem);
+}
+
+.share-sheet__actions {
+  gap: 12px;
+  border: 0;
+}
+
+.share-action {
+  display: block;
+  min-height: 54px;
+  padding: 13px 22px;
+  color: #050505;
+  border: 1px solid #d4d4d4;
+  border-radius: 10px;
+  font-size: clamp(1.05rem, 4.7vw, 1.35rem);
+}
+
+.share-action > span:first-child {
+  font-weight: 500;
+}
+
+.export-card {
+  display: grid;
+  grid-template-rows: 350px 1fr 286px;
+  padding: 0;
+  color: #050505;
+  background: #fbfaf4;
+}
+
+.export-card::before {
+  opacity: 0.17;
+  mix-blend-mode: multiply;
+}
+
+.export-card__header,
+.export-card__footer {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  background: #2185ac var(--paper-texture) center / cover;
+  background-blend-mode: multiply;
+}
+
+.export-card__header {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 36px;
+  padding: 52px 76px 0;
+  color: #fff;
+}
+
+.export-card__header > img {
+  width: 100%;
+}
+
+.export-card__header > p {
+  margin: 0;
+  font-size: 43px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+}
+
+.export-card__header .wave,
+.export-card__footer .wave {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 86px;
+}
+
+.export-card__body {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  justify-items: center;
+  padding: 30px 80px 32px;
+}
+
+.export-card__label {
+  margin: 0;
+  color: #050505;
+  font-size: 44px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+.export-card__portrait {
+  height: auto;
+  padding: 20px 0;
+}
+
+.export-card__portrait img {
+  max-width: 440px;
+  max-height: 430px;
+}
+
+.export-card h2 {
+  margin: 0;
+  font-size: 70px;
+  letter-spacing: -0.055em;
+}
+
+.export-card__reading {
+  margin: 14px 0 0;
+  color: #8f8f8f;
+  font-size: 45px;
+  font-weight: 800;
+  letter-spacing: 0.055em;
+}
+
+.export-card__footer {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  align-items: end;
+  gap: 38px;
+  padding: 74px 74px 44px;
+}
+
+.export-card__footer > div:first-child {
+  align-self: center;
+}
+
+.export-card__footer p {
+  width: max-content;
+  margin: 0 0 18px;
+  padding: 8px 38px;
+  border: 3px solid #050505;
+  background: #fbfaf4;
+  font-size: 39px;
+}
+
+.export-card__footer span {
+  display: block;
+  max-width: 440px;
+  font-size: 34px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.export-card__qr {
+  display: block;
+  width: 320px;
+  padding: 0;
+  border: 0;
+  background: #fff;
+}
+
+.export-card__qr img {
+  display: block;
+  width: 100%;
+}
+
+.export-card__qr span {
+  display: none;
+}
+
+@media (min-width: 513px) {
+  .business-card {
+    height: min(calc(100dvh - 56px), 768px);
+  }
+}
+
+@media (max-height: 660px) {
+  .brand-header {
+    min-height: 120px;
+    padding-top: 18px;
+  }
+
+  .brand-header > div > p:last-child {
+    font-size: 1rem;
+  }
+
+  .card-page {
+    padding-top: 25px;
+  }
+
+  .profile-page__art img {
+    max-height: 175px;
   }
 }
