@@ -66,3 +66,111 @@ final result: passed
 - カード領域の横スワイプでプロフィールとポートフォリオを切り替え。リンクやボタン上のドラッグはページ切替に使わない。
 - Chromiumの横スワイプ検証、位置インジケーターの非操作属性、320×568／844×390の配置検証を追加し、対象テストは合格。
 - 位置確認矢印は、現在ページを示す黄色側を4.8cqwへ拡大し、矢印全体を下部波形内で上方向へ6%位置に調整。
+
+## 2026-09-24 — Figmaメニュー更新と反転モーション
+
+### 比較対象
+
+- Source visual truth: `C:\Users\beefs\Downloads\Frame 3_icon_button.png`（通常）および `C:\Users\beefs\Downloads\Frame 3_icon_button_reverse.png`（反転）。
+- Figma browser frames: `Frame 3_icon_button`（`1550:272`）および `Frame 3_icon_button_reverse`（`1556:263`）、file key `wBIQdELnH2eoJJGGV077V4`。Figma MCPの取得上限に達したため、Chrome上のFigmaで確認した。
+- Implementation: ローカルChromeプレビュー `http://127.0.0.1:5173/digital-business-card/`。通常プロフィール、反転プロフィール、通常ポートフォリオ、反転ポートフォリオの各状態を目視。ブラウザー画像はツール上で確認し、画像ファイルとしては保存していない。
+
+### 変更と確認
+
+- Figmaのプロフィール／ポートフォリオ／保存・シェア／反転の各アイコンを書き出し、4項目ナビとアイコン周囲の選択表示を実装。
+- 反転はカード面を平面上で180度、`720ms`・`cubic-bezier(0.42, 0, 0.58, 1)` で回転（3D反転や鏡映なし）。ナビとページ矢印はカード外に保ち、正位置のまま表示。プロフィール／ポートフォリオを選ぶと通常向きへ戻る。動きを抑えるOS設定では既存の共通ルールにより即時に近い切替。
+- ページ位置矢印は選択中の黄色サイズを維持し、非選択の黒矢印を `0.65em` に縮小。添付カンプとChromeプレビューで見た目を確認。
+- メニューの選択背景を小さく透明な円からグレーの円へ `320ms` でフェード、`420ms` で拡大するようにし、押下時の縮小も `260ms` のイージングに調整。Chromeでプロフィール／反転の選択切替を確認。
+
+## 2026-09-25 — 下部メニューをフッター化
+
+- 4項目メニューをカードの直後に続く通常フローから分離し、画面下端のフッターとして扱うレイアウトに変更。カードとページ位置インジケーターはフッターの上に配置する。
+- フッター背景を画面幅いっぱいにし、上端の境界線と薄い影でコンテンツ領域から分ける。下端は端末の安全領域を考慮する。
+- Chromeのローカルプレビューで、画面最下部への配置、4項目の表示、カード／ページ矢印との非重複を目視確認。短い画面ではコンテンツをスクロール可能にする。
+- Chromeで反転のON/OFF、ポートフォリオとの相互切替、反転選択の表示を確認。`npm run build` 成功。500kB超のバンドルサイズ注意は表示されたが、ビルドは完了。
+
+final result: passed
+
+## 2026-09-25 — コピーライトをFigmaへ反映
+
+- `Frame 3_icon_button`（`1550:272`）と `Frame 3_icon_button_reverse`（`1556:263`）に `© 2026 SOUR＆SOUR` を追加。両フレームで検索結果が2件となることを確認。
+- Noto Sans JP Medium、20px、白、文字間隔2%に統一。通常版は下端の青い領域内に配置し、反転版はカードの回転に合わせて上端に180°回転して配置。
+- Figma MCPの呼び出し上限により、Chrome上のFigmaで編集と目視確認を実施。
+
+## 2026-09-25 — 趣味をプロフィールとFigmaへ反映
+
+- 名前・英字表記の下に程よい間隔を取り、下部波形の手前に「趣味：ふらふら遠出」を配置。設定値を共通化し、保存用画像にも反映。
+- 通常版・反転版の両Figmaフレームへ趣味テキストを追加。反転版はカードの向きに合わせて文字も180°回転。
+- 添付カンプに合わせ、名前→英字表記→趣味の順へ変更。アプリでは趣味を下部波形の手前に配置し、コピーライトとの間に余白を確保。`npm run build` 成功。
+- Figma MCP上限のため、Chrome経由でフレームを編集・確認。
+
+## 2026-09-25 — 趣味テキストの下端クリップを修正
+
+- 趣味テキストに明示的な行高と下側の余白を設定し、字形の下端が欠けないように調整。プロフィール表示と保存用カードの両方へ適用。
+- Figmaの通常版・反転版はテキスト枠を高さ自動調整、行間150%に変更。通常版は波形との重なりを避けるため少し上へ移動。
+
+## 2026-09-26 — プロフィール／ポートフォリオの2ページPDF
+
+### 比較対象と正規化
+
+- Source visual truth: `C:\Users\beefs\AppData\Local\Temp\codex-clipboard-044b4aca-3e8c-4121-a854-e9d8f4ef675b.png`。プロフィール面とポートフォリオ面の2枚を、それぞれ286×430px相当（2:3）で切り出して比較。
+- Implementation: `C:\Users\beefs\Downloads\non-business-card (2).pdf`。PDFは2ページ、各ページは1365.33×2048pt（2:3）。Chromiumで実際に保存されたファイルをPopplerで各800×1200pxにレンダリング。
+- Full and focused comparison: `C:\Users\beefs\Documents\Codex\2026-09-26\new-chat\work\pdf-pair-comparison.png`。上段がプロフィール、下段がポートフォリオ。各段で左が添付参照、右がPDFページ。
+
+### 比較履歴
+
+- [P1 → fixed] 先行のPDFはプロフィールのみの1ページだった。添付を確認し直し、PDFをプロフィール→ポートフォリオの2ページに変更。
+- [P1 → fixed] プロフィール面のフッターにポートフォリオURLとQRを置いていたが、今回の参照ではプロフィール面はコピーライトのみ。URLとQRをポートフォリオ面に集約。
+- [P1 → fixed] ポートフォリオ面は見出し・中央QR・URLを縦に並べ、上部タイトル、上下の波形、紙目、コピーライトをプロフィール面と統一。
+- PDFの説明を2ページ構成へ更新し、保存後の成功表示はjsPDFの保存Promiseを待ってから出す。
+
+### 最終確認
+
+- Fonts and typography: 肩書き・氏名・英字名、ポートフォリオ見出し・URLの大きさ、行間、中央揃えを参照と照合。文字の欠けや折返しなし。
+- Spacing and layout rhythm: 2ページとも2:3。プロフィールはイラストから英字名までの順序を維持し、ポートフォリオは見出し→QR→URL。本文と下部波形は重ならない。
+- Colors and visual tokens: 青い上下波形、白い紙面、黄色のイラスト背景、紙目、黒文字を参照と照合。
+- Image quality and asset fidelity: 既存タイトル画像、プロフィールイラスト、QR、波形、紙目を使用。QRはポートフォリオURLを値として生成。
+- Copy and content: プロフィール／ポートフォリオを1ページずつ、プロフィール側はコピーライトのみ、ポートフォリオ側にURLとQRを配置。
+- States and accessibility: アプリ内のPDF保存操作で実ファイルがDownloadsに作成され、2ページとして開けることを確認。E2EのPDF期待ページ数を2へ更新。E2E自体は未実行。
+
+### 実装チェックリスト
+
+- [x] 添付の2枚を同一比較画像にまとめて照合
+- [x] PDFの2ページ、各ページ比率、ページ順を確認
+- [x] ダウンロード先 `C:\Users\beefs\Downloads\non-business-card (2).pdf` を実ファイルで確認
+- [x] `npm run build` 成功（500kB超チャンクの既存注意あり）
+- [ ] E2Eテストは未実行
+
+final result: passed
+
+## 2026-09-26 — PDF見出しサブタイトルの文字サイズ
+
+### 比較対象と正規化
+
+- Source visual truth: `C:\Users\beefs\AppData\Local\Temp\codex-clipboard-044b4aca-3e8c-4121-a854-e9d8f4ef675b.png`（761×511px）。プロフィール面の286×430px領域を比較対象とした。
+- Implementation: `C:\Users\beefs\Downloads\non-business-card (3).pdf` の1ページ目。PDFの各ページは1365.33×2048pt、レンダリングは800×1200px。参照・実装ともに2:3で、比較時にカード領域を286×430pxへ正規化。deviceScaleFactorは対象外（PDFページのラスター画像）。
+- State: PDFのプロフィール面・ポートフォリオ面。重点対象は両ページ上部の `ただの、自己紹介。`。
+- Full-view comparison: `C:\Users\beefs\Documents\Codex\2026-09-26\new-chat\work\pdf-pair-fontsize-comparison.png`。各段で左が参照、右がPDFページ。
+- Focused comparison: `C:\Users\beefs\Documents\Codex\2026-09-26\new-chat\work\subtitle-size-after.png`。上部のタイトルとサブタイトルを拡大して比較。
+
+### 比較履歴
+
+- [P2 → fixed] 初回比較では実装のサブタイトルが参照より大きく、カード幅に対する可視文字列幅も広かった。参照の文字領域は約97×11px（286×430pxのカード内）、47px設定の実装は正規化前に約329×35px（800×1200px内）。
+- `src/figma-visible-layers.css` と `src/styles.css` の保存カード見出しを40pxへ統一。再出力後は約281×30pxとなり、カード比で参照の文字サイズ・幅に近づいた。再比較画像で上下位置、中央揃え、行の収まりも確認。
+
+### 最終確認
+
+- Fonts and typography: 40px、ウェイト800、既存の字間を維持。参照と同じカード比へ縮尺を揃え、サイズと文字列幅を目視・画素範囲で照合。切れや折返しなし。
+- Spacing and layout rhythm: 見出しの位置は保持し、プロフィール／ポートフォリオ各ページの中央配置を維持。
+- Colors and visual tokens: 青いヘッダーと白いサブタイトルの配色を維持。
+- Image quality and asset fidelity: タイトル素材、波形、紙目、イラストは変更なし。
+- Copy and content: `ただの、自己紹介。` の表記を維持。
+
+### 実装チェックリスト
+
+- [x] 参照・実装を同じ2:3カード比に正規化
+- [x] 全体比較とサブタイトル拡大比較を同一ターンで確認
+- [x] 2ページPDFを更新し、2ページ構成を維持
+- [x] `npm run build` と `git diff --check` 成功
+
+final result: passed

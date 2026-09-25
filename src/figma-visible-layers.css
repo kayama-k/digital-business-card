@@ -4,7 +4,7 @@
   --blue: #3e8ab0;
   container-type: inline-size;
   display: block;
-  width: min(100%, 512px, calc((100dvh - 128px) * 2 / 3));
+  width: min(100%, 512px, calc((100dvh - 176px) * 2 / 3));
   height: auto;
   min-height: 0;
   aspect-ratio: 2 / 3;
@@ -48,6 +48,23 @@
 .business-card > .wave {
   z-index: 1;
   mix-blend-mode: normal;
+}
+
+.business-card__copyright {
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  bottom: 1.25%;
+  left: 0;
+  margin: 0;
+  color: #fff;
+  font-family:
+    "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  font-size: 2.35cqw;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-align: center;
 }
 
 .brand-header {
@@ -162,6 +179,7 @@
 
 .profile-page__copy {
   position: absolute;
+  z-index: 2;
   top: 51.4cqw;
   right: 0;
   left: 0;
@@ -178,7 +196,7 @@
 }
 
 .profile-page__reading {
-  margin-top: 1.5cqw;
+  margin-top: 1cqw;
   font-size: 4cqw;
   letter-spacing: 0.055em;
 }
@@ -202,89 +220,140 @@
 }
 
 .carousel-indicator {
-  position: absolute;
-  z-index: 3;
-  right: 0;
-  bottom: 6%;
-  left: 0;
   display: flex;
+  min-height: 36px;
   align-items: center;
   justify-content: center;
-  gap: 1.35cqw;
-  color: #fff;
-  font-size: 3.6cqw;
+  gap: clamp(8px, 2cqw, 14px);
+  color: #292929;
+  font-size: clamp(1.25rem, 4.8vw, 2rem);
   line-height: 1;
   pointer-events: none;
 }
 
 .carousel-indicator__item {
   opacity: 0.9;
+  font-size: 0.65em;
 }
 
 .carousel-indicator__item.is-current {
-  color: #ffd500;
-  font-size: 4.8cqw;
+  color: #f2da00;
+  font-size: 1.2em;
 }
 
 .app-shell {
-  min-height: min(100dvh, 768px);
-  display: flex;
-  flex-direction: column;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: minmax(min-content, 1fr) auto auto;
   align-items: center;
-  justify-content: center;
+  justify-items: center;
   gap: clamp(12px, 2.4vh, 20px);
   overflow: auto;
-  padding: max(12px, env(safe-area-inset-top)) 16px
-    max(12px, env(safe-area-inset-bottom));
+  padding: max(12px, env(safe-area-inset-top)) 16px 0;
+  background: #fff;
 }
 
 .app-nav {
+  position: sticky;
+  z-index: 5;
+  bottom: 0;
   container-type: inline-size;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  width: min(100%, 512px, calc((100dvh - 128px) * 2 / 3));
-  gap: 8px;
-  padding: 8px;
-  border-radius: 18px;
-  background: rgb(33 133 172 / 14%);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-self: stretch;
+  width: calc(100% + 32px);
+  margin-inline: -16px;
+  gap: 0;
+  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+  border-top: 1px solid #ededed;
+  background: #fff;
+  box-shadow: 0 -3px 12px rgb(0 0 0 / 6%);
 }
 
 .app-nav button {
   display: flex;
-  min-height: 68px;
+  min-height: 76px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 8px 4px;
-  color: #050505;
+  gap: 4px;
+  padding: 4px 2px;
+  color: #292929;
   border: 0;
-  border-radius: 10px;
-  background: #fcfaf1;
-  box-shadow: 0 4px 8px rgb(0 0 0 / 14%);
-  font-size: clamp(0.68rem, 3.1cqw, 0.9rem);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: clamp(0.62rem, 2.8cqw, 0.9rem);
   font-weight: 500;
   line-height: 1.2;
   white-space: nowrap;
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .app-nav__icon {
-  color: #2185ac;
-  font-size: clamp(1rem, 5.2cqw, 1.35rem);
-  line-height: 1;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  width: clamp(44px, 12cqw, 64px);
+  height: clamp(44px, 12cqw, 64px);
+  place-items: center;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.app-nav__icon::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  border-radius: inherit;
+  background: #d9d9d9;
+  content: "";
+  opacity: 0;
+  transform: scale(0.82);
+  transition:
+    opacity 320ms ease,
+    background-color 280ms ease,
+    transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.app-nav__icon img {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 62%;
+  height: 62%;
+  object-fit: contain;
 }
 
 .app-nav button.is-current {
-  color: #fff;
-  background: #9c9c9c;
+  color: #292929;
+  background: transparent;
 }
 
-.app-nav button.is-current .app-nav__icon {
-  color: #ffd500;
+.app-nav button.is-current .app-nav__icon::before {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .app-nav button:active {
-  transform: scale(0.97);
+  transform: scale(0.985);
+}
+
+.app-nav button:active .app-nav__icon::before {
+  background-color: #e9e9e9;
+  transform: scale(0.94);
+}
+
+.business-card {
+  transform: rotate(0deg);
+  transform-origin: center;
+  transition: transform var(--flip-duration) var(--flip-easing);
+  will-change: transform;
+}
+
+.business-card--flipped {
+  transform: rotate(180deg);
 }
 
 .sr-only {
@@ -330,7 +399,7 @@
   top: 130px;
   left: 0;
   width: 100%;
-  font-size: 47px;
+  font-size: 40px;
   text-align: center;
 }
 
@@ -360,12 +429,18 @@
   top: 425px;
   left: 0;
   width: 100%;
-  height: 620px;
-  grid-template-rows: 70px 420px 80px 50px;
+  height: 680px;
+  display: block;
   padding: 0 80px;
 }
 
 .export-card__portrait {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
   padding: 0;
 }
 
@@ -373,6 +448,38 @@
   width: 368px;
   max-width: 368px;
   max-height: 368px;
+}
+
+.export-card__label {
+  position: absolute;
+  top: 410px;
+  right: 0;
+  left: 0;
+  margin: 0;
+  font-size: 38px;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.export-card h2 {
+  position: absolute;
+  top: 500px;
+  right: 0;
+  left: 0;
+  font-size: 66px;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.export-card__reading {
+  position: absolute;
+  top: 600px;
+  right: 0;
+  left: 0;
+  margin: 0;
+  font-size: 38px;
+  line-height: 1.25;
+  text-align: center;
 }
 
 .export-card__footer {
@@ -394,6 +501,7 @@
 }
 
 .export-card__qr {
+  position: absolute;
   right: 80px;
   bottom: 40px;
   width: 300px;
@@ -401,6 +509,62 @@
 
 .export-card__footer > .export-card__qr {
   z-index: 2;
+}
+
+.export-card__footer > .export-card__copyright {
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  bottom: 22px;
+  left: 0;
+  width: auto;
+  margin: 0;
+  padding: 0;
+  color: #fff;
+  border: 0;
+  background: transparent;
+  font-family:
+    "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-align: center;
+}
+
+.export-card__portfolio h2 {
+  position: absolute;
+  top: 65px;
+  right: 0;
+  left: 0;
+  margin: 0;
+  font-size: 54px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.export-card__portfolio-qr {
+  position: absolute;
+  top: 185px;
+  left: 50%;
+  display: block;
+  width: 330px;
+  transform: translateX(-50%);
+}
+
+.export-card__portfolio > p {
+  position: absolute;
+  top: 575px;
+  right: 40px;
+  left: 40px;
+  margin: 0;
+  font-family: monospace;
+  font-size: 42px;
+  letter-spacing: 0.02em;
+  text-align: center;
+  text-decoration: underline;
 }
 
 @media (min-width: 513px) {
@@ -425,5 +589,11 @@
 
   .card-page {
     padding-top: 0;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 600px) {
+  .app-shell {
+    gap: 6px;
   }
 }

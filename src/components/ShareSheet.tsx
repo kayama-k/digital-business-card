@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { QrCode } from './QrCode';
 
 export type ShareAction = 'png' | 'pdf' | 'share' | 'copy';
 
@@ -6,13 +7,18 @@ type ShareSheetProps = {
   open: boolean;
   onClose: () => void;
   onAction: (action: ShareAction) => void;
+  publicUrl: string;
   returnFocusRef: React.RefObject<HTMLButtonElement | null>;
 };
 
 const actions: Array<{ id: ShareAction; label: string; detail: string }> = [
   { id: 'png', label: 'PNGで保存', detail: 'スマートフォンに画像を保存' },
-  { id: 'pdf', label: 'PDFで保存', detail: '1ページのPDFをダウンロード' },
-  { id: 'share', label: 'URLをシェア', detail: '端末の共有メニューを開く' },
+  {
+    id: 'pdf',
+    label: 'PDFで保存',
+    detail: 'プロフィールとポートフォリオを2ページで保存',
+  },
+  { id: 'share', label: 'URLをシェア', detail: '名刺URLのQRコードを表示' },
   { id: 'copy', label: 'リンクをコピー', detail: 'クリップボードへコピー' },
 ];
 
@@ -20,10 +26,38 @@ export function ShareSheet({
   open,
   onClose,
   onAction,
+  publicUrl,
   returnFocusRef,
 }: ShareSheetProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const wasOpenRef = useRef(false);
+  const closeTimerRef = useRef<number | undefined>(undefined);
+  const dragStartRef = useRef<{ y: number; pointerId: number } | null>(null);
+  const [present, setPresent] = useState(open);
+  const [closing, setClosing] = useState(false);
+  const [entering, setEntering] = useState(open);
+  const [dragY, setDragY] = useState(0);
+  const [dragging, setDragging] = useState(false);
+  const [showUrlQr, setShowUrlQr] = useState(false);
+
+  useEffect(() => {
+    window.clearTimeout(closeTimerRef.current);
+    if (open) {
+      setPresent(true);
+      setClosing(false);
+      setEntering(true);
+      setDragY(0);
+      setDragging(false);
+      setShowUrlQr(false);
+      return;
+    }
+    if (!present) return;
+    setClosing(true);
+    closeTimerRef.current = window.setTimeout(() => setPresent(false), 360);
+    return () => window.clearTimeout(closeTimerRef.current);
+  }, [open, present]);
+
+  useEffect(() => () => window.clearTimeout(closeTimerRef.current), []);
 
   useEffect(() => {
     if (!open) return;
@@ -62,10 +96,57 @@ export function ShareSheet({
     wasOpenRef.current = false;
   }, [open, returnFocusRef]);
 
-  if (!open) return null;
+  if (!present && !open) return null;
+
+  const handleDragStart = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (closing) return;
+    dragStartRef.current = { y: event.clientY, pointerId: event.pointerId };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setDragging(true);
+  };
+
+  const handleDragMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    const dragStart = dragStartRef.current;
+    if (!dragStart || dragStart.pointerId !== event.pointerId) return;
+    setDragY(Math.max(0, event.clientY - dragStart.y));
+  };
+
+  const handleDragEnd = (event: React.PointerEvent<HTMLDivElement>) => {
+    const dragStart = dragStartRef.current;
+    if (!dragStart || dragStart.pointerId !== event.pointerId) return;
+    dragStartRef.current = null;
+    setDragging(false);
+    if (event.clientY - dragStart.y > 88) {
+      onClose();
+    } else {
+      setDragY(0);
+    }
+  };
+
+  const handleDragCancel = (event: React.PointerEvent<HTMLDivElement>) => {
+    const dragStart = dragStartRef.current;
+    if (!dragStart || dragStart.pointerId !== event.pointerId) return;
+    dragStartRef.current = null;
+    setDragging(false);
+    setDragY(0);
+  };
+
+  const handleAnimationEnd = (event: React.AnimationEvent<HTMLDivElement>) => {
+    if (event.target !== event.currentTarget) return;
+    if (event.animationName === 'sheet-exit' && closing) setPresent(false);
+    else if (event.animationName === 'sheet-enter') setEntering(false);
+  };
+
+  const handleAction = (action: ShareAction) => {
+    if (action === 'share') setShowUrlQr(true);
+    onAction(action);
+  };
 
   return (
-    <div className="sheet-layer" role="presentation">
+    <div
+      className={`sheet-layer${closing ? ' sheet-layer--closing' : ''}`}
+      role="presentation"
+    >
       <button
         type="button"
         className="sheet-layer__backdrop"
@@ -74,23 +155,54 @@ export function ShareSheet({
       />
       <div
         ref={dialogRef}
-        className="share-sheet"
+        className={`share-sheet${entering || open ? ' is-entering' : ''}${
+          dragging ? ' is-dragging' : ''
+        }`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="share-heading"
+        aria-hidden={closing}
+        inert={closing}
+        onAnimationEnd={handleAnimationEnd}
+        style={{ '--sheet-drag-y': `${dragY}px` } as React.CSSProperties}
       >
-        <div className="share-sheet__handle" aria-hidden="true" />
+        <div
+          className={`share-sheet__handle${dragging ? ' is-dragging' : ''}`}
+          aria-hidden="true"
+          onPointerDown={handleDragStart}
+          onPointerMove={handleDragMove}
+          onPointerUp={handleDragEnd}
+          onPointerCancel={handleDragCancel}
+        />
         <div className="share-sheet__heading">
           <p>KEEP IN TOUCH</p>
           <h2 id="share-heading">保存・シェア</h2>
         </div>
+        {showUrlQr && (
+          <section
+            className="share-sheet__url-card"
+            aria-labelledby="share-url-heading"
+          >
+            <h3 id="share-url-heading" className="share-sheet__url-label">
+              名刺URL
+            </h3>
+            <div className="share-sheet__url-qr">
+              <QrCode
+                value={publicUrl}
+                label="名刺URLのQRコード"
+                className="share-sheet__url-qr-image"
+              />
+            </div>
+            <p className="share-sheet__url-value">{publicUrl}</p>
+          </section>
+        )}
         <div className="share-sheet__actions">
           {actions.map((action) => (
             <button
               type="button"
               key={action.id}
               className="share-action"
-              onClick={() => onAction(action.id)}
+              onClick={() => handleAction(action.id)}
             >
               <span>{action.label}</span>
               <small>{action.detail}</small>

@@ -1,45 +1,62 @@
 import { forwardRef } from 'react';
 import { cardConfig } from '../config/card';
+import type { CardView } from './CardContent';
 import { QrCode } from './QrCode';
 import { Wave } from './Wave';
 
-export const ExportCard = forwardRef<HTMLElement>(function ExportCard(_, ref) {
-  const { person, urls, assets } = cardConfig;
+type ExportCardProps = {
+  view: CardView;
+};
 
-  return (
-    <article
-      ref={ref}
-      className="export-card"
-      aria-hidden="true"
-      style={
-        {
-          '--paper-texture': `url(${cardConfig.assets.paperTexture})`,
-        } as React.CSSProperties
-      }
-    >
-      <header className="export-card__header">
-        <img src={assets.outlinedTitle} alt="" />
-        <p>{person.message}</p>
-        <Wave active={false} edge="bottom" />
-      </header>
-      <section className="export-card__body">
-        <p className="export-card__label">{person.role}</p>
-        <div className="export-card__portrait">
-          <img src={assets.profileIllustration} alt="" />
-        </div>
-        <h2>{person.name}</h2>
-        <p className="export-card__reading">{person.reading}</p>
-      </section>
-      <footer className="export-card__footer">
-        <div>
-          <p>PORTFOLIO</p>
-          <span>{urls.portfolio}</span>
-        </div>
-        <div className="export-card__qr">
-          <QrCode value={urls.portfolio} label="ポートフォリオを開くQRコード" />
-        </div>
-        <Wave active={false} edge="top" />
-      </footer>
-    </article>
-  );
-});
+export const ExportCard = forwardRef<HTMLElement, ExportCardProps>(
+  function ExportCard({ view }, ref) {
+    const { businessName, copyrightYear, person, urls, assets } = cardConfig;
+
+    return (
+      <article
+        ref={ref}
+        className={`export-card export-card--${view}`}
+        aria-hidden="true"
+        style={
+          {
+            '--paper-texture': `url(${cardConfig.assets.paperTexture})`,
+          } as React.CSSProperties
+        }
+      >
+        <header className="export-card__header">
+          <img src={assets.outlinedTitle} alt="" />
+          <p>{person.message}</p>
+          <Wave active={false} edge="bottom" />
+        </header>
+        <section className="export-card__body">
+          {view === 'profile' ? (
+            <>
+              <div className="export-card__portrait">
+                <img src={assets.profileIllustration} alt="" />
+              </div>
+              <p className="export-card__label">{person.role}</p>
+              <h2>{person.name}</h2>
+              <p className="export-card__reading">{person.reading}</p>
+            </>
+          ) : (
+            <div className="export-card__portfolio">
+              <h2>ポートフォリオ</h2>
+              <QrCode
+                value={urls.portfolio}
+                label="ポートフォリオへ移動するQRコード"
+                className="export-card__portfolio-qr"
+              />
+              <p>{urls.portfolio}</p>
+            </div>
+          )}
+        </section>
+        <footer className="export-card__footer">
+          <p className="export-card__copyright">
+            © {copyrightYear} {businessName}
+          </p>
+          <Wave active={false} edge="top" />
+        </footer>
+      </article>
+    );
+  },
+);
