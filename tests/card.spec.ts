@@ -164,7 +164,7 @@ test('すべての画面で紙の名刺らしい2:3比率を保つ', async ({
       const rect = element.getBoundingClientRect();
       return { bottom: rect.bottom, top: rect.top, width: rect.width };
     });
-    expect(nav.width).toBeCloseTo(card.width, 0);
+    expect(nav.width).toBeCloseTo(viewport.width, 0);
     expect(card.bottom).toBeLessThanOrEqual(nav.top);
     expect(nav.bottom).toBeLessThanOrEqual(viewport.height);
   }
@@ -329,7 +329,7 @@ test('画面切替では旧画面と新画面が指定方向へ同時に動き�
 
 test('ポートフォリオ遷移中にQRを作り直さない', async ({ page }) => {
   await page.goto('./');
-  await expect(page.locator('.export-card__qr img')).toHaveAttribute(
+  await expect(page.locator('.export-card__portfolio-qr')).toHaveAttribute(
     'src',
     /^data:image\/png/,
   );
@@ -440,7 +440,10 @@ test('保存・シェアシートをEscで閉じ、操作元へフォーカス�
   page,
 }) => {
   await page.goto('./');
-  const shareButton = page.getByRole('button', { name: '保存・シェア' });
+  const shareButton = page.getByRole('button', {
+    name: '保存・シェア',
+    exact: true,
+  });
   await shareButton.click();
 
   await expect(
@@ -452,31 +455,35 @@ test('保存・シェアシートをEscで閉じ、操作元へフォーカス�
   await expect(shareButton).toBeFocused();
 });
 
-test('Web Shareが使えない場合は公開URLをコピーする', async ({ page }) => {
+test('URLをシェアすると共有画面を開かず名刺URLのQRコードを表示する', async ({
+  page,
+}) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'share', {
       configurable: true,
-      value: undefined,
-    });
-    Object.defineProperty(navigator, 'clipboard', {
-      configurable: true,
-      value: {
-        writeText: async (text: string) => {
-          document.documentElement.dataset.copiedText = text;
-        },
+      value: async () => {
+        document.documentElement.dataset.nativeShareCalled = 'true';
       },
     });
   });
 
   await page.goto('./');
+  const dialog = page.getByRole('dialog', { name: '保存・シェア' });
   await page.getByRole('button', { name: '保存・シェア' }).click();
-  await page.getByRole('button', { name: 'URLをシェア' }).click();
+  await dialog.getByRole('button', { name: 'URLをシェア' }).click();
 
+  expect(
+    await page.evaluate(
+      () => document.documentElement.dataset.nativeShareCalled,
+    ),
+  ).toBeUndefined();
+  await expect(dialog.getByRole('heading', { name: '名刺URL' })).toBeVisible();
+  const qrCode = dialog.getByRole('img', { name: '名刺URLのQRコード' });
+  await expect(qrCode).toHaveAttribute('src', /^data:image\/png/);
   await expect
-    .poll(() =>
-      page.evaluate(() => document.documentElement.dataset.copiedText),
-    )
+    .poll(async () => decodeQrDataUrl((await qrCode.getAttribute('src')) ?? ''))
     .toBe(publicCardUrl);
+  await expect(dialog.getByText(publicCardUrl, { exact: true })).toBeVisible();
 });
 
 for (const action of [
@@ -509,8 +516,10 @@ for (const action of [
     }
 
     const pdf = await PDFDocument.load(content);
-    expect(pdf.getPageCount()).toBe(1);
-    const { width, height } = pdf.getPage(0).getSize();
-    expect(width / height).toBeCloseTo(2 / 3, 4);
+    expect(pdf.getPageCount()).toBe(2);
+    for (const page of pdf.getPages()) {
+      const { width, height } = page.getSize();
+      expect(width / height).toBeCloseTo(2 / 3, 4);
+    }
   });
 }

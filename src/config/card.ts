@@ -12,6 +12,8 @@ const assetUrl = (path: string) => `${import.meta.env.BASE_URL}${path}`;
  */
 export const cardConfig = {
   title: 'ノン・ビジネスカード',
+  businessName: 'K.K.',
+  copyrightYear: new Date().getFullYear(),
   person: {
     name: 'しおれもん@長野',
     reading: 'SALTY LEMON',
@@ -30,11 +32,16 @@ export const cardConfig = {
       description: '制作と活動の記録',
     },
   ] satisfies LinkItem[],
+  preparedPng: assetUrl('images/non-business-card.png'),
   assets: {
     profileIllustration: assetUrl('images/profile.png'),
     outlinedTitle: assetUrl('images/image_title.svg'),
     paperTexture: assetUrl('images/base.png'),
     blueTexture: assetUrl('images/base-blue.png'),
+    navProfile: assetUrl('images/nav-profile.png'),
+    navPortfolio: assetUrl('images/nav-portfolio.png'),
+    navSave: assetUrl('images/nav-save.png'),
+    navFlip: assetUrl('images/nav-flip.png'),
   },
   animation: {
     waveDurationMs: 1300,
@@ -45,6 +52,8 @@ export const cardConfig = {
     waveCurveTension: 0.55,
     easing: 'cubic-bezier(0.45, 0, 0.15, 1)',
     pageDurationMs: 540,
+    flipDurationMs: 720,
+    flipEasing: 'cubic-bezier(0.42, 0, 0.58, 1)',
     start: {
       pageDelayMs: 0,
       waveDelayMs: 0,
