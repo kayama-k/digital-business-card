@@ -108,7 +108,7 @@ export default function App() {
   const onShareAction = async (action: ShareAction) => {
     try {
       if (action === 'png') {
-        download(await renderExport(), 'non-business-card.png');
+        download(cardConfig.preparedPng, 'non-business-card.png');
         showNotice('PNGを保存しました。');
       }
       if (action === 'pdf') {

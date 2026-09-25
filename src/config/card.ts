@@ -30,6 +30,7 @@ export const cardConfig = {
       description: '制作と活動の記録',
     },
   ] satisfies LinkItem[],
+  preparedPng: assetUrl('images/non-business-card.png'),
   assets: {
     profileIllustration: assetUrl('images/profile.png'),
     outlinedTitle: assetUrl('images/image_title.svg'),
