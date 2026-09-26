@@ -475,7 +475,6 @@ test('保存・シェアシートは本体を下へスワイプして閉じら�
   });
   await shareButton.click();
 
-  const sheet = page.locator('.share-sheet');
   await page.waitForFunction(() => {
     const sheet = document.querySelector('.share-sheet');
     return Boolean(
@@ -486,14 +485,17 @@ test('保存・シェアシートは本体を下へスワイプして閉じら�
         ),
     );
   });
-  const bounds = await sheet.boundingBox();
+  const dragTarget = page.getByRole('button', { name: 'PNGで保存' });
+  const bounds = await dragTarget.boundingBox();
   expect(bounds).not.toBeNull();
   if (!bounds)
-    throw new Error('保存・シェアシートの座標を取得できませんでした。');
+    throw new Error('保存・シェア操作の座標を取得できませんでした。');
 
-  await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + 100);
+  const startX = bounds.x + bounds.width / 2;
+  const startY = bounds.y + bounds.height / 2;
+  await page.mouse.move(startX, startY);
   await page.mouse.down();
-  await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + 180, {
+  await page.mouse.move(startX, startY + 80, {
     steps: 3,
   });
   await page.mouse.up();

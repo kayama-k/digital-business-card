@@ -37,6 +37,10 @@ export function ShareSheet({
     pointerId: number;
     startedAt: number;
   } | null>(null);
+  const dragInteractiveRef = useRef(false);
+  const dragActiveRef = useRef(false);
+  const dragMovedRef = useRef(false);
+  const suppressClickRef = useRef(false);
   const [present, setPresent] = useState(open);
   const [closing, setClosing] = useState(false);
   const [entering, setEntering] = useState(open);
@@ -52,6 +56,11 @@ export function ShareSheet({
       setEntering(true);
       setDragY(0);
       setDragging(false);
+      dragStartRef.current = null;
+      dragInteractiveRef.current = false;
+      dragActiveRef.current = false;
+      dragMovedRef.current = false;
+      suppressClickRef.current = false;
       setShowUrlQr(false);
       return;
     }
@@ -103,34 +112,48 @@ export function ShareSheet({
   if (!present && !open) return null;
 
   const handleDragStart = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (
-      closing ||
-      (event.pointerType === 'mouse' && event.button !== 0) ||
+    if (closing || (event.pointerType === 'mouse' && event.button !== 0))
+      return;
+    dragInteractiveRef.current = Boolean(
       (event.target as HTMLElement).closest(
         'button,a,input,textarea,select,[role="button"]',
-      )
-    ) {
-      return;
-    }
+      ),
+    );
+    dragActiveRef.current = !dragInteractiveRef.current;
+    dragMovedRef.current = false;
+    suppressClickRef.current = false;
     dragStartRef.current = {
       y: event.clientY,
       pointerId: event.pointerId,
       startedAt: event.timeStamp,
     };
-    event.currentTarget.setPointerCapture(event.pointerId);
-    setDragging(true);
+    if (dragActiveRef.current) {
+      event.currentTarget.setPointerCapture(event.pointerId);
+      setDragging(true);
+    }
   };
 
   const handleDragMove = (event: React.PointerEvent<HTMLDivElement>) => {
     const dragStart = dragStartRef.current;
     if (!dragStart || dragStart.pointerId !== event.pointerId) return;
-    setDragY(Math.max(0, event.clientY - dragStart.y));
+    const deltaY = event.clientY - dragStart.y;
+    if (Math.abs(deltaY) > 10) {
+      if (!dragActiveRef.current) {
+        dragActiveRef.current = true;
+        event.currentTarget.setPointerCapture(event.pointerId);
+        setDragging(true);
+      }
+      dragMovedRef.current = true;
+    }
+    setDragY(Math.max(0, deltaY));
   };
 
   const handleDragEnd = (event: React.PointerEvent<HTMLDivElement>) => {
     const dragStart = dragStartRef.current;
     if (!dragStart || dragStart.pointerId !== event.pointerId) return;
     dragStartRef.current = null;
+    dragInteractiveRef.current = false;
+    dragActiveRef.current = false;
     setDragging(false);
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
@@ -138,8 +161,11 @@ export function ShareSheet({
     const deltaY = event.clientY - dragStart.y;
     const elapsed = Math.max(1, event.timeStamp - dragStart.startedAt);
     const velocity = deltaY / elapsed;
+    const moved = dragMovedRef.current;
+    dragMovedRef.current = false;
+    suppressClickRef.current = moved;
     setDragY(0);
-    if (deltaY > 72 || (deltaY > 28 && velocity > 0.55)) {
+    if (deltaY > 56 || (deltaY > 20 && velocity > 0.45)) {
       onClose();
     }
   };
@@ -148,6 +174,10 @@ export function ShareSheet({
     const dragStart = dragStartRef.current;
     if (!dragStart || dragStart.pointerId !== event.pointerId) return;
     dragStartRef.current = null;
+    dragInteractiveRef.current = false;
+    dragActiveRef.current = false;
+    suppressClickRef.current = dragMovedRef.current;
+    dragMovedRef.current = false;
     setDragging(false);
     setDragY(0);
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
@@ -164,6 +194,13 @@ export function ShareSheet({
   const handleAction = (action: ShareAction) => {
     if (action === 'share') setShowUrlQr(true);
     onAction(action);
+  };
+
+  const handleClickCapture = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!suppressClickRef.current) return;
+    suppressClickRef.current = false;
+    event.preventDefault();
+    event.stopPropagation();
   };
 
   return (
@@ -192,6 +229,7 @@ export function ShareSheet({
         onPointerMove={handleDragMove}
         onPointerUp={handleDragEnd}
         onPointerCancel={handleDragCancel}
+        onClickCapture={handleClickCapture}
         style={{ '--sheet-drag-y': `${dragY}px` } as React.CSSProperties}
       >
         <div
