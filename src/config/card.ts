@@ -51,7 +51,8 @@ export const cardConfig = {
     // 中間の波形ポイントをつなぐ接線の強さ。小さいほど穏やかに収束する。
     waveCurveTension: 0.55,
     easing: 'cubic-bezier(0.45, 0, 0.15, 1)',
-    pageDurationMs: 540,
+    // 指の追従感を損なわないよう、画面切替は波より短く収束させる。
+    pageDurationMs: 420,
     flipDurationMs: 720,
     flipEasing: 'cubic-bezier(0.42, 0, 0.58, 1)',
     start: {

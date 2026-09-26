@@ -30,12 +30,21 @@ export default function App() {
   const shareButtonRef = useRef<HTMLButtonElement>(null);
   const pageTimerRef = useRef<number | undefined>(undefined);
   const waveTimerRef = useRef<number | undefined>(undefined);
-  const swipeStartRef = useRef<{ x: number; y: number } | null>(null);
+  const swipeStartRef = useRef<{
+    x: number;
+    y: number;
+    pointerId: number;
+    startedAt: number;
+  } | null>(null);
+  const swipeSettleTimerRef = useRef<number | undefined>(undefined);
+  const [swipeX, setSwipeX] = useState(0);
+  const [swipeSettling, setSwipeSettling] = useState(false);
 
   useEffect(
     () => () => {
       window.clearTimeout(pageTimerRef.current);
       window.clearTimeout(waveTimerRef.current);
+      window.clearTimeout(swipeSettleTimerRef.current);
     },
     [],
   );
@@ -77,26 +86,88 @@ export default function App() {
 
   const handleSwipeStart = (event: React.PointerEvent<HTMLDivElement>) => {
     if (
+      transition ||
+      (event.pointerType === 'mouse' && event.button !== 0) ||
       (event.target as HTMLElement).closest('a,button,input,textarea,select')
     ) {
       swipeStartRef.current = null;
       return;
     }
-    swipeStartRef.current = { x: event.clientX, y: event.clientY };
+    window.clearTimeout(swipeSettleTimerRef.current);
+    setSwipeSettling(false);
+    setSwipeX(0);
+    swipeStartRef.current = {
+      x: event.clientX,
+      y: event.clientY,
+      pointerId: event.pointerId,
+      startedAt: event.timeStamp,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handleSwipeMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    const start = swipeStartRef.current;
+    if (!start || start.pointerId !== event.pointerId || transition) return;
+
+    const deltaX = event.clientX - start.x;
+    const maxOffset = event.currentTarget.clientWidth * 0.9;
+    setSwipeX(Math.max(-maxOffset, Math.min(maxOffset, deltaX)));
+  };
+
+  const settleSwipe = () => {
+    setSwipeSettling(true);
+    setSwipeX(0);
+    window.clearTimeout(swipeSettleTimerRef.current);
+    swipeSettleTimerRef.current = window.setTimeout(
+      () => setSwipeSettling(false),
+      180,
+    );
   };
 
   const handleSwipeEnd = (event: React.PointerEvent<HTMLDivElement>) => {
     const start = swipeStartRef.current;
     swipeStartRef.current = null;
-    if (!start || transition) return;
-    if ((event.target as HTMLElement).closest('a,button,input,textarea,select'))
-      return;
+    if (!start || start.pointerId !== event.pointerId) return;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    if (transition) return;
     const deltaX = event.clientX - start.x;
     const deltaY = event.clientY - start.y;
-    if (Math.abs(deltaX) < 28 || Math.abs(deltaX) < Math.abs(deltaY) * 1.25)
+    const elapsed = Math.max(1, event.timeStamp - start.startedAt);
+    const velocity = Math.abs(deltaX) / elapsed;
+    setSwipeSettling(false);
+    setSwipeX(0);
+    if (
+      Math.abs(deltaX) < 20 ||
+      Math.abs(deltaX) < Math.abs(deltaY) * 1.1 ||
+      (Math.abs(deltaX) < 34 && velocity < 0.45)
+    ) {
+      settleSwipe();
       return;
+    }
     setCardView(deltaX < 0 ? 'portfolio' : 'profile');
   };
+
+  const handleSwipeCancel = (event: React.PointerEvent<HTMLDivElement>) => {
+    const start = swipeStartRef.current;
+    if (!start || start.pointerId !== event.pointerId) return;
+    swipeStartRef.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    settleSwipe();
+  };
+
+  const swipeStyle =
+    swipeStartRef.current || swipeSettling
+      ? ({
+          transform: `translateX(${swipeX}px)`,
+          transition: swipeSettling
+            ? 'transform 180ms cubic-bezier(0.22, 1, 0.36, 1)'
+            : 'none',
+        } as React.CSSProperties)
+      : undefined;
 
   const renderExport = useCallback(async (element: HTMLElement | null) => {
     if (!element) throw new Error('保存用カードを準備できませんでした。');
@@ -176,14 +247,13 @@ export default function App() {
         />
 
         <section
-          className="card-viewport"
           aria-label="名刺のカルーセル"
           aria-live="polite"
           onPointerDown={handleSwipeStart}
+          onPointerMove={handleSwipeMove}
           onPointerUp={handleSwipeEnd}
-          onPointerCancel={() => {
-            swipeStartRef.current = null;
-          }}
+          onPointerCancel={handleSwipeCancel}
+          className={`card-viewport${swipeSettling ? ' is-swipe-settling' : ''}`}
         >
           {transition && (
             <div
@@ -198,6 +268,7 @@ export default function App() {
           <div
             key="current"
             className={`card-track${transition ? ` card-track--entering card-track--${transition.to === 'portfolio' ? 'right' : 'left'}` : ''}`}
+            style={!transition ? swipeStyle : undefined}
           >
             <CardContent view={transition?.to ?? view} />
           </div>

@@ -191,6 +191,16 @@ test('名刺は横スワイプで切り替わり、ページ位置インジケ�
   );
   await page.mouse.down();
   await page.mouse.move(
+    bounds.x + bounds.width * 0.6,
+    bounds.y + bounds.height / 2,
+  );
+  expect(
+    await viewport
+      .locator('.card-track')
+      .last()
+      .evaluate((element) => getComputedStyle(element).transform),
+  ).not.toBe('none');
+  await page.mouse.move(
     bounds.x + bounds.width * 0.2,
     bounds.y + bounds.height / 2,
     {
@@ -309,7 +319,7 @@ test('画面切替では旧画面と新画面が指定方向へ同時に動き�
     );
     expect(snapshot.leavingName).toBe(step.leaving);
     expect(snapshot.enteringName).toBe(step.entering);
-    expect(snapshot.pageDuration).toBe('0.54s');
+    expect(snapshot.pageDuration).toBe('0.42s');
     expect(snapshot.exitTransform).toContain(step.exitTransform);
     expect(snapshot.entryTransform).toContain(step.entryTransform);
     expect(snapshot.waveCount).toBe(2);
@@ -451,6 +461,43 @@ test('保存・シェアシートをEscで閉じ、操作元へフォーカス�
   ).toBeVisible();
   await expect(page.getByRole('button', { name: 'PNGで保存' })).toBeFocused();
   await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await expect(shareButton).toBeFocused();
+});
+
+test('保存・シェアシートは本体を下へスワイプして閉じられる', async ({
+  page,
+}) => {
+  await page.goto('./');
+  const shareButton = page.getByRole('button', {
+    name: '保存・シェア',
+    exact: true,
+  });
+  await shareButton.click();
+
+  const sheet = page.locator('.share-sheet');
+  await page.waitForFunction(() => {
+    const sheet = document.querySelector('.share-sheet');
+    return Boolean(
+      sheet
+        ?.getAnimations()
+        .every((animation) =>
+          ['finished', 'idle'].includes(animation.playState),
+        ),
+    );
+  });
+  const bounds = await sheet.boundingBox();
+  expect(bounds).not.toBeNull();
+  if (!bounds)
+    throw new Error('保存・シェアシートの座標を取得できませんでした。');
+
+  await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + 100);
+  await page.mouse.down();
+  await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + 180, {
+    steps: 3,
+  });
+  await page.mouse.up();
+
   await expect(page.getByRole('dialog')).toBeHidden();
   await expect(shareButton).toBeFocused();
 });

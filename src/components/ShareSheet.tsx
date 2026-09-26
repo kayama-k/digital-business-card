@@ -32,7 +32,11 @@ export function ShareSheet({
   const dialogRef = useRef<HTMLDivElement>(null);
   const wasOpenRef = useRef(false);
   const closeTimerRef = useRef<number | undefined>(undefined);
-  const dragStartRef = useRef<{ y: number; pointerId: number } | null>(null);
+  const dragStartRef = useRef<{
+    y: number;
+    pointerId: number;
+    startedAt: number;
+  } | null>(null);
   const [present, setPresent] = useState(open);
   const [closing, setClosing] = useState(false);
   const [entering, setEntering] = useState(open);
@@ -99,8 +103,20 @@ export function ShareSheet({
   if (!present && !open) return null;
 
   const handleDragStart = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (closing) return;
-    dragStartRef.current = { y: event.clientY, pointerId: event.pointerId };
+    if (
+      closing ||
+      (event.pointerType === 'mouse' && event.button !== 0) ||
+      (event.target as HTMLElement).closest(
+        'button,a,input,textarea,select,[role="button"]',
+      )
+    ) {
+      return;
+    }
+    dragStartRef.current = {
+      y: event.clientY,
+      pointerId: event.pointerId,
+      startedAt: event.timeStamp,
+    };
     event.currentTarget.setPointerCapture(event.pointerId);
     setDragging(true);
   };
@@ -116,10 +132,15 @@ export function ShareSheet({
     if (!dragStart || dragStart.pointerId !== event.pointerId) return;
     dragStartRef.current = null;
     setDragging(false);
-    if (event.clientY - dragStart.y > 88) {
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    const deltaY = event.clientY - dragStart.y;
+    const elapsed = Math.max(1, event.timeStamp - dragStart.startedAt);
+    const velocity = deltaY / elapsed;
+    setDragY(0);
+    if (deltaY > 72 || (deltaY > 28 && velocity > 0.55)) {
       onClose();
-    } else {
-      setDragY(0);
     }
   };
 
@@ -129,6 +150,9 @@ export function ShareSheet({
     dragStartRef.current = null;
     setDragging(false);
     setDragY(0);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
   };
 
   const handleAnimationEnd = (event: React.AnimationEvent<HTMLDivElement>) => {
@@ -164,15 +188,15 @@ export function ShareSheet({
         aria-hidden={closing}
         inert={closing}
         onAnimationEnd={handleAnimationEnd}
+        onPointerDown={handleDragStart}
+        onPointerMove={handleDragMove}
+        onPointerUp={handleDragEnd}
+        onPointerCancel={handleDragCancel}
         style={{ '--sheet-drag-y': `${dragY}px` } as React.CSSProperties}
       >
         <div
           className={`share-sheet__handle${dragging ? ' is-dragging' : ''}`}
           aria-hidden="true"
-          onPointerDown={handleDragStart}
-          onPointerMove={handleDragMove}
-          onPointerUp={handleDragEnd}
-          onPointerCancel={handleDragCancel}
         />
         <div className="share-sheet__heading">
           <p>KEEP IN TOUCH</p>
