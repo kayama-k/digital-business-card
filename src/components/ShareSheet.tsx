@@ -41,6 +41,8 @@ export function ShareSheet({
   const dragActiveRef = useRef(false);
   const dragMovedRef = useRef(false);
   const suppressClickRef = useRef(false);
+  const dragFrameRef = useRef<number | undefined>(undefined);
+  const pendingDragYRef = useRef(0);
   const [present, setPresent] = useState(open);
   const [closing, setClosing] = useState(false);
   const [entering, setEntering] = useState(open);
@@ -70,7 +72,13 @@ export function ShareSheet({
     return () => window.clearTimeout(closeTimerRef.current);
   }, [open, present]);
 
-  useEffect(() => () => window.clearTimeout(closeTimerRef.current), []);
+  useEffect(
+    () => () => {
+      window.clearTimeout(closeTimerRef.current);
+      window.cancelAnimationFrame(dragFrameRef.current ?? 0);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -111,6 +119,25 @@ export function ShareSheet({
 
   if (!present && !open) return null;
 
+  const applyDragY = (value: number) => {
+    window.cancelAnimationFrame(dragFrameRef.current ?? 0);
+    dragFrameRef.current = undefined;
+    pendingDragYRef.current = value;
+    dialogRef.current?.style.setProperty('--sheet-drag-y', `${value}px`);
+  };
+
+  const scheduleDragY = (value: number) => {
+    pendingDragYRef.current = value;
+    if (dragFrameRef.current !== undefined) return;
+    dragFrameRef.current = window.requestAnimationFrame(() => {
+      dragFrameRef.current = undefined;
+      dialogRef.current?.style.setProperty(
+        '--sheet-drag-y',
+        `${pendingDragYRef.current}px`,
+      );
+    });
+  };
+
   const handleDragStart = (event: React.PointerEvent<HTMLDivElement>) => {
     if (closing || (event.pointerType === 'mouse' && event.button !== 0))
       return;
@@ -122,6 +149,7 @@ export function ShareSheet({
     dragActiveRef.current = !dragInteractiveRef.current;
     dragMovedRef.current = false;
     suppressClickRef.current = false;
+    applyDragY(0);
     dragStartRef.current = {
       y: event.clientY,
       pointerId: event.pointerId,
@@ -145,7 +173,7 @@ export function ShareSheet({
       }
       dragMovedRef.current = true;
     }
-    setDragY(Math.max(0, deltaY));
+    scheduleDragY(Math.max(0, deltaY));
   };
 
   const handleDragEnd = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -164,6 +192,7 @@ export function ShareSheet({
     const moved = dragMovedRef.current;
     dragMovedRef.current = false;
     suppressClickRef.current = moved;
+    applyDragY(0);
     setDragY(0);
     if (deltaY > 56 || (deltaY > 20 && velocity > 0.45)) {
       onClose();
@@ -179,6 +208,7 @@ export function ShareSheet({
     suppressClickRef.current = dragMovedRef.current;
     dragMovedRef.current = false;
     setDragging(false);
+    applyDragY(0);
     setDragY(0);
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
